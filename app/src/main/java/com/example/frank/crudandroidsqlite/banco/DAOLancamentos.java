@@ -66,7 +66,7 @@ public class DAOLancamentos {
     }
 
     public Lancamento buscarPorId(Integer id){
-        Lancamento lancamento = null;
+        Lancamento lancamento = new Lancamento();
         String[] colunas = {"id", "descricao", "tipo_lancamento", "valor"};
         Cursor cursor = database.query("lancamentos", colunas,
                 "id="+id,null,null,null,

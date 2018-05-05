@@ -1,10 +1,13 @@
 package com.example.frank.crudandroidsqlite;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.frank.crudandroidsqlite.banco.DAOLancamentos;
@@ -12,8 +15,8 @@ import com.example.frank.crudandroidsqlite.banco.DAOLancamentos;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
+    ListView listView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,9 +27,15 @@ public class MainActivity extends AppCompatActivity {
 //        lancamento.setTipoLancamento("Credito");
 //        new DAOLancamentos(this).inserir(lancamento);//
 //        Log.i("MainActivity",String.valueOf(new DAOLancamentos(this).consultar().size()));
-        List<Lancamento> listaLancamentos = new DAOLancamentos(this).consultar();
+        listView = findViewById(R.id.listaLancamentos);
+        listView.setOnItemClickListener(this);
+        listView.setOnItemLongClickListener(this);
+    }
 
-        ListView listView = findViewById(R.id.listaLancamentos);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        List<Lancamento> listaLancamentos = new DAOLancamentos(this).consultar();
         AdapterLancamento adapterLancamento = new AdapterLancamento(this, listaLancamentos);
         listView.setAdapter(adapterLancamento);
     }
@@ -34,5 +43,41 @@ public class MainActivity extends AppCompatActivity {
     public void chamarTelaCadastrar(View view){
         Intent intent = new Intent(this, TelaCadastrarAlterarLancamento.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Intent intent = new Intent(this, TelaCadastrarAlterarLancamento.class);
+            intent.putExtra("id",Integer.parseInt(String.valueOf(id)));
+            startActivity(intent);
+    }
+
+    private void atualizarLista(){
+        List<Lancamento> listaLancamentos = new DAOLancamentos(this).consultar();
+        AdapterLancamento adapterLancamento = new AdapterLancamento(this, listaLancamentos);
+        listView.setAdapter(adapterLancamento);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+         final DAOLancamentos daoLancamentos = new DAOLancamentos(this);
+         final long idExcluir = id;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Deseja Excluir o Registro??")
+                .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        daoLancamentos.excluir(Integer.parseInt(String.valueOf(idExcluir)));
+                        atualizarLista();
+                    }
+                })
+                .setNegativeButton("Não", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+
+        return true;
     }
 }

@@ -1,7 +1,9 @@
 package com.example.frank.crudandroidsqlite;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -24,6 +26,20 @@ public class TelaCadastrarAlterarLancamento extends AppCompatActivity {
         editTextValor = (EditText) findViewById(R.id.editValor);
         radioButtonCredito = (RadioButton) findViewById(R.id.radioCredito);
         radioButtonDebito = (RadioButton) findViewById(R.id.radioDebito);
+
+        Bundle bundle = getIntent().getExtras();
+        if(bundle!=null && bundle.containsKey("id")){
+            Integer id = bundle.getInt("id");
+            Log.i("Tela",""+id);
+            lancamento = new DAOLancamentos(this).buscarPorId(id);
+            editTextNome.setText(lancamento.getDescricao());
+            editTextValor.setText(String.valueOf(lancamento.getValorLancamento()));
+            if(lancamento.getTipoLancamento().equals("+")){
+                radioButtonCredito.setChecked(true);
+            }else{
+                radioButtonDebito.setChecked(true);
+            }
+        }
     }
 
     public void inserir(View view){
@@ -34,6 +50,15 @@ public class TelaCadastrarAlterarLancamento extends AppCompatActivity {
         }else{
             lancamento.setTipoLancamento("+");
         }
-        new DAOLancamentos(this).inserir(lancamento);
+        if(lancamento.getId()==null) {
+            new DAOLancamentos(this).inserir(lancamento);
+        }else{
+            new DAOLancamentos(this).alterar(lancamento);
+        }
+
+        //Solução ruim
+        //Intent intent = new Intent(this, MainActivity.class);
+        //startActivity(intent);
+        finish();
     }
 }
